@@ -33,6 +33,17 @@ router.post('/', async (req, res) => {
   }
 });
 
+// DELETE /orders/:id
+router.delete('/:id', async (req, res) => {
+  try {
+    const deleted = await Order.findByIdAndDelete(req.params.id);
+    if (!deleted) return res.status(404).json({ error: 'Order not found' });
+    res.json({ message: 'Order deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /orders/summary?month=4&year=2025
 router.get('/summary', async (req, res) => {
   try {
@@ -53,6 +64,7 @@ router.get('/summary', async (req, res) => {
         summary[order.name][order.type] += 1;
         summary[order.name].total += PRICES[order.type];
         summary[order.name].orders.push({
+          _id: order._id,
           date: order.date,
           type: order.type,
           time: order.time,
