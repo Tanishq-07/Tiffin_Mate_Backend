@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
+const { MEMBERS } = require('../config');
 
 const orderSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    enum: ['Tanishq', 'Ansh', 'Akshat', 'Praful'],
+    enum: MEMBERS,
   },
   time: {
     type: String,

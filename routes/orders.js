@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
-
-const PRICES = { full: 80, half: 40 };
+const { MEMBERS, PRICES } = require('../config');
 
 // POST /orders
 router.post('/', async (req, res) => {
@@ -10,16 +9,13 @@ router.post('/', async (req, res) => {
     const { name, time, type, date } = req.body;
     const orderDate = date ? new Date(date) : new Date();
 
-    // Build day range for duplicate check
     const dayStart = new Date(orderDate);
     dayStart.setHours(0, 0, 0, 0);
     const dayEnd = new Date(orderDate);
     dayEnd.setHours(23, 59, 59, 999);
 
     const existing = await Order.findOne({
-      name,
-      time,
-      type,
+      name, time, type,
       date: { $gte: dayStart, $lte: dayEnd },
     });
 
@@ -49,9 +45,8 @@ router.get('/summary', async (req, res) => {
 
     const orders = await Order.find({ date: { $gte: start, $lt: end } }).sort({ date: 1 });
 
-    const names = ['Tanishq', 'Person2', 'Person3', 'Person4'];
     const summary = {};
-    names.forEach((n) => { summary[n] = { full: 0, half: 0, total: 0, orders: [] }; });
+    MEMBERS.forEach((n) => { summary[n] = { full: 0, half: 0, total: 0, orders: [] }; });
 
     orders.forEach((order) => {
       if (summary[order.name]) {
