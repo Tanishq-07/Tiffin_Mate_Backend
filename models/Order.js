@@ -4,7 +4,7 @@ const orderSchema = new mongoose.Schema({
   name: {
     type: String,
     required: true,
-    enum: ['Tanishq', 'Person2', 'Person3', 'Person4'],
+    enum: ['Tanishq', 'Ansh', 'Akshat', 'Praful'],
   },
   time: {
     type: String,
