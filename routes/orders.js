@@ -74,17 +74,15 @@ router.get('/summary', authMiddleware, async (req, res) => {
     const { members, prices } = await getConfig();
     const isAdmin = req.user.role === 'admin';
 
-    // Build DB query — member only sees their own orders
+    // Strictly enforce: members only see their own orders at DB level
     const orderQuery = {
       date: { $gte: start, $lt: end },
-      ...(isAdmin ? {} : { name: req.user.name }),
+      name: isAdmin ? { $in: members } : req.user.name,
     };
 
     const orders = await Order.find(orderQuery).sort({ date: 1 });
 
-    // Build summary map
-    // Admin: all members shown (even with 0 orders)
-    // Member: only themselves
+    // visibleMembers strictly controls what appears in response
     const visibleMembers = isAdmin ? members : [req.user.name];
 
     const summary = {};
@@ -93,9 +91,8 @@ router.get('/summary', authMiddleware, async (req, res) => {
     });
 
     orders.forEach((order) => {
-      if (!summary[order.name]) {
-        summary[order.name] = { full: 0, half: 0, total: 0, orders: [] };
-      }
+      // Only add to summary if in visibleMembers — never leak other users
+      if (!summary[order.name]) return;
       summary[order.name][order.type] += 1;
       summary[order.name].total += prices[order.type] || 0;
       summary[order.name].orders.push({
